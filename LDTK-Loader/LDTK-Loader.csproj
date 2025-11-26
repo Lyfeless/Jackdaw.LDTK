@@ -6,9 +6,27 @@
     <RootNamespace>LDTK_Loader</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Title>Jackdaw.LDTK</Title>
+    <Version>0.1.0</Version>
+    <Authors>Lyfeless</Authors>
+    <Description>An extension for importing LDTK projects into Jackdaw games.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Lyfeless/Jackdaw.LDTK</RepositoryUrl>
+
+    <PackageId>JackdawEngine.LDTK</PackageId>
+    <PackageProjectUrl>https://github.com/Lyfeless/Jackdaw.LDTK</PackageProjectUrl>
+    <PackageTags>Jackdaw;Foster;LDTK</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jackdaw\Jackdaw\Jackdaw.csproj" />
+    <PackageReference Include="JackdawEngine" Version="0.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(ProjectDir)..\LICENSE" Pack="true" PackagePath="/" />
+    <None Include="$(ProjectDir)..\README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 </Project>

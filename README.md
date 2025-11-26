@@ -3,7 +3,7 @@ An extension for loading levels made in the [LDTK](ldtk.io) editor as nodes for 
 This extension is still work-in-progress and may be missing integration with some LDTK features.
 
 ### Usage
-The extension loads levels using the `LDTKLoader` class, which expects an a .ldtk file in the project. In order to work correctly, the setting `Save levels as seperate files` needs to be enabled in the ldtk project's EXTRA FILES options.
+The extension loads levels using the `LDTKLoader` class, which expects an a .ldtk file in the project. In order to work correctly, the setting `Save levels as seperate files` needs to be enabled in the ldtk project's `EXTRA FILES` options.
 
 The extension uses conversion functions to load entities into corresponding actor instances. To set up an actor for use with level loading references need to be defined with the `RegisterActor` function.
 

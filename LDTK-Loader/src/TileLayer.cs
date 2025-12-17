@@ -64,13 +64,12 @@ public class LDTKTileLayer : Component, ISpatialGrid<Point2, LDTKTile> {
     }
 
     protected override void Added() {
-        if (collider.ActorValid) { collider.Actor.Components.Remove(collider); }
-        if (renderer.ActorValid) { renderer.Actor.Components.Remove(renderer); }
         Actor.Components.Add(collider);
         Actor.Components.Add(renderer);
     }
 
     protected override void Removed() {
+        if (!IsValid) { return; }
         Actor.Components.Remove(collider);
         Actor.Components.Remove(renderer);
     }

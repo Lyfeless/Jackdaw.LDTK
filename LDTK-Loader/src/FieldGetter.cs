@@ -210,7 +210,7 @@ public static class LDTKFieldGetter {
     public static string[] GetStringList(string id, FieldSaveData[] fields) {
         JsonElement obj = GetFieldElement(id, fields);
         if (obj.ValueKind == JsonValueKind.Undefined) { return []; }
-        return [.. obj.EnumerateArray().Select(e => e.GetString())];
+        return [.. obj.EnumerateArray().Select(e => e.GetString() ?? "")];
     }
 
     /// <summary>

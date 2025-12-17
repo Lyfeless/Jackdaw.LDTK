@@ -100,12 +100,12 @@ public class LDTKTile() {
     }
 
     void SetValues() {
-        Sprite[] sprites = [.. Elements.Where(e => e.Sprite != null).Select(e => e.Sprite)];
+        Sprite[] sprites = [.. Elements.Where(e => e.Sprite != null).Select(e => e.Sprite!)];
         if (sprites.Length == 0) { Sprite = null; }
         else if (sprites.Length == 1) { Sprite = sprites[0]; }
         else { Sprite = new SpriteStack(sprites); }
 
-        Collider[] colliders = [.. Elements.Where(e => e.Collider != null).Select(e => e.Collider)];
+        Collider[] colliders = [.. Elements.Where(e => e.Collider != null).Select(e => e.Collider!)];
         if (colliders.Length == 0) { Collider = null; }
         else if (colliders.Length == 1) { Collider = colliders[0]; }
         else { Collider = new MultiCollider(colliders); }

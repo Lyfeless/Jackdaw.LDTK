@@ -164,7 +164,7 @@ public class LDTKTileset {
                         */
 
                         if (dataValue == string.Empty) { continue; }
-                        element.Sprite = new SpriteAnimated(Game, Game.Assets.GetAnimation(dataValue));
+                        element.Sprite = new SpriteAnimated(Game, Game.Assets.GetAnimationData(dataValue));
                         break;
                 }
             }

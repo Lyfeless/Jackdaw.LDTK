@@ -96,7 +96,7 @@ public class LDTKLoader {
 
         Actor levelRoot = new(Game);
         levelRoot.Match.Name = levelRef.NameID;
-        levelRoot.Position.LocalPosition = new(levelRef.X, levelRef.Y);
+        levelRoot.Position = new(levelRef.X, levelRef.Y);
         // Point2 levelSize = new(levelRef.Width, levelRef.Height);
 
         List<Actor> layers = [];
@@ -107,7 +107,7 @@ public class LDTKLoader {
             Actor newLayer = new(Game);
             newLayer.Match.Name = layerDefinition.Identifier ?? layerData.InstanceID;
             newLayer.Match.Guid = new Guid(layerData.InstanceID);
-            newLayer.Position.LocalPosition = new(layerData.OffsetX, layerData.OffsetY);
+            newLayer.Position = new(layerData.OffsetX, layerData.OffsetY);
             if (!layerData.Visible) {
                 newLayer.Ticking = false;
                 newLayer.Visible = false;
@@ -123,7 +123,7 @@ public class LDTKLoader {
                             Actor newEntity = new(Game);
                             newEntity.Match.Name = entityData.InstanceID;
                             newEntity.Match.Guid = new Guid(entityData.InstanceID);
-                            newEntity.Position.LocalPosition = new(entityData.Position[0], entityData.Position[1]);
+                            newEntity.Position = new(entityData.Position[0], entityData.Position[1]);
                             ActorRegistry[entityData.NameID](newEntity, entityData);
 
                             newLayer.Children.Add(newEntity);
@@ -180,7 +180,7 @@ public class LDTKLoader {
                 Path.GetFileNameWithoutExtension(tileset.TexturePath)
             ).Replace("\\", "/");
 
-        return Game.Assets.GetTexture(path);
+        return Game.Assets.GetSubtexture(path);
     }
 
     /// <summary>

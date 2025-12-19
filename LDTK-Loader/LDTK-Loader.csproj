@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>LDTK_Loader</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -22,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JackdawEngine" Version="0.2.0" />
+    <PackageReference Include="JackdawEngine" Version="0.2.2" />
   </ItemGroup>
 
   <ItemGroup>

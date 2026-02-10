@@ -9,7 +9,7 @@ namespace Jackdaw.Loader.LDTK;
 public class LDTKTileLayer : Component, ISpatialGrid<Point2, LDTKTile> {
     readonly GridCollider colliderGrid;
     readonly CollisionComponent collider;
-    readonly GridRendererComponent renderer;
+    readonly GridRenderComponent renderer;
 
     readonly Grid<LDTKTile> Tiles;
     readonly LDTKTileset Tileset;

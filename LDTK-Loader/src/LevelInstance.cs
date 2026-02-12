@@ -2,5 +2,5 @@ namespace Jackdaw.Loader.LDTK;
 
 public class LDTKLevelInstance {
     public required Actor ActorTree;
-    public required FieldSaveData[] Fields;
+    public required FieldContainer Fields;
 }

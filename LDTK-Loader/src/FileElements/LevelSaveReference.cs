@@ -25,5 +25,5 @@ internal class LevelSaveReference {
     public string BackgroundColor { get; set; } = string.Empty;
 
     [JsonPropertyName("fieldInstances")]
-    public FieldSaveData[] Fields { get; set; } = [];
+    public FieldContainer Fields { get; set; } = new();
 }

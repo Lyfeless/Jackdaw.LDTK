@@ -20,12 +20,21 @@ public class LDTKLoader : AssetLoaderStage {
     }
 
     public override void Run(Assets assets) {
-        if (!File.Exists(FilePath)) { return; }
+        if (!File.Exists(FilePath)) {
+            Log.Warning($"LDTKLoader: Unable to load level definition file. The given path is invalid.");
+            return;
+        }
         WorldSaveData? data;
-        try {
-            data = JsonSerializer.Deserialize(File.ReadAllText(FilePath), LDTKSourceGenerationContext.Default.WorldSaveData);
-        } catch { return; }
-        if (data == null) { return; }
+        // try {
+        data = JsonSerializer.Deserialize(File.ReadAllText(FilePath), LDTKSourceGenerationContext.Default.WorldSaveData);
+        // } catch {
+        //     Log.Warning($"LDTKLoader: Unable to load level definition file. An error occured when loading data.");
+        //     return;
+        // }
+        if (data == null) {
+            Log.Warning($"LDTKLoader: Unable to load level definition file. An error occured when loading data.");
+            return;
+        }
 
         foreach (TilesetSaveDefinition tileset in data.Definitions.Tilesets) {
             Storage.Tilesets.Add(

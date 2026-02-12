@@ -53,5 +53,5 @@ public class EntitySaveData {
     /// Use <seealso cref="LDTKFieldGetter"/> to get variable data.
     /// </summary>
     [JsonPropertyName("fieldInstances")]
-    public FieldSaveData[] Fields { get; set; } = [];
+    public FieldContainer Fields { get; set; } = new();
 }

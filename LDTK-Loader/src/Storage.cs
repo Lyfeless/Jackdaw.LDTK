@@ -20,7 +20,7 @@ public class LDTKStorage(Game game, string folderPath) : IAssetStorage {
 
     LDTKLevelInstance FallbackInstance = new() {
         ActorTree = Actor.Invalid,
-        Fields = []
+        Fields = new()
     };
 
     public void Add(string name, object asset) { Levels.Add(name, (LevelSaveReference)asset); }

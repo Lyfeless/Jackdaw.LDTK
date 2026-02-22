@@ -3,14 +3,16 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
-public class LDTKStorage(Game game, string folderPath) : IAssetStorage {
+public class LDTKStorage(Game game, string group) : IAssetStorage {
+    const string LEVEL_EXTENSION = ".ldtkl";
+
     const string EntityLayerDescriptor = "Entities";
     const string IntGridLayerDescriptor = "IntGrid";
     const string TileLayerDescriptor = "Tiles";
     const string AutoLayerDescriptor = "AutoLayer";
 
     readonly Game Game = game;
-    readonly string FolderPath = folderPath;
+    readonly string Group = group;
 
     internal readonly Dictionary<int, LDTKTileset> Tilesets = [];
     internal readonly Dictionary<int, LayerSaveDefinition> LayerDefinitions = [];
@@ -26,20 +28,20 @@ public class LDTKStorage(Game game, string folderPath) : IAssetStorage {
     public void Add(string name, object asset) { Levels.Add(name, (LevelSaveReference)asset); }
 
     public object Get(string name) {
-        if (!Levels.TryGetValue(name, out LevelSaveReference? levelRef)) {
-            return FailWithFallback($"LDTKLoader: Level name {name} not found, load unsuccessful");
-        }
+        AssetProviderItem level = new(Group, name, LEVEL_EXTENSION);
+        if (
+            !Levels.TryGetValue(name, out LevelSaveReference? levelRef) ||
+            !Game.Assets.Provider.HasItem(level)
+        ) { return FailWithFallback($"LDTKLoader: Level {name} not found, load unsuccessful"); }
 
         LevelSaveData? levelData;
         try {
-            levelData = JsonSerializer.Deserialize(File.ReadAllText(Path.Join(FolderPath, $"{levelRef.NameID}.ldtkl")), LDTKSourceGenerationContext.Default.LevelSaveData);
-        } catch {
-            return LevelLoadFail(name);
-        }
-
-        if (levelData == null) {
-            return LevelLoadFail(name);
-        }
+            using Stream stream = Game.Assets.Provider.GetItemStream(level);
+            Span<byte> bytes = new byte[stream.Length];
+            stream.ReadExactly(bytes);
+            levelData = JsonSerializer.Deserialize(bytes, LDTKSourceGenerationContext.Default.LevelSaveData)
+                ?? throw new Exception();
+        } catch { return LevelLoadFail(name); }
 
         Actor levelRoot = new(Game);
         levelRoot.Match.Name = levelRef.NameID;

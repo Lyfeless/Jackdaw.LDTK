@@ -4,43 +4,46 @@ using Foster.Framework;
 namespace Jackdaw.Loader.LDTK;
 
 public class LDTKLoader : AssetLoaderStage {
-    readonly Game Game;
-    readonly string FilePath;
+    const string WORLD_EXTENSION = ".ldtk";
+
+    readonly string Group;
     readonly Func<string, int?> CollisionTagFunc;
 
-    readonly LDTKStorage Storage;
+    readonly Dictionary<string, Action<Actor, EntitySaveData>> TempActorRegistry = [];
 
-    public LDTKLoader(Game game, string path, Func<string, int?> collisionTagFunc) {
-        Game = game;
-        FilePath = path;
+    public LDTKLoader(string group, Func<string, int?> collisionTagFunc) {
+        Group = group;
         CollisionTagFunc = collisionTagFunc;
-        Storage = new(game, GetFolderPath(path));
 
         SetAfter<PackerLoader>();
     }
 
     public override void Run(Assets assets) {
-        if (!File.Exists(FilePath)) {
-            Log.Warning($"LDTKLoader: Unable to load level definition file. The given path is invalid.");
+        LDTKStorage storage = new(assets.Game, Group);
+
+        AssetProviderItem world = new("", Group, WORLD_EXTENSION);
+        if (!assets.Provider.HasItem(world)) {
+            Log.Warning($"LDTKLoader: Unable to load level definition file. No level definition file found for {world}.");
             return;
         }
+
         WorldSaveData? data;
-        // try {
-        data = JsonSerializer.Deserialize(File.ReadAllText(FilePath), LDTKSourceGenerationContext.Default.WorldSaveData);
-        // } catch {
-        //     Log.Warning($"LDTKLoader: Unable to load level definition file. An error occured when loading data.");
-        //     return;
-        // }
-        if (data == null) {
+        try {
+            using Stream stream = assets.Provider.GetItemStream(world);
+            Span<byte> bytes = new byte[stream.Length];
+            stream.ReadExactly(bytes);
+            data = JsonSerializer.Deserialize(bytes, LDTKSourceGenerationContext.Default.WorldSaveData)
+                ?? throw new Exception();
+        } catch {
             Log.Warning($"LDTKLoader: Unable to load level definition file. An error occured when loading data.");
             return;
         }
 
         foreach (TilesetSaveDefinition tileset in data.Definitions.Tilesets) {
-            Storage.Tilesets.Add(
+            storage.Tilesets.Add(
                 tileset.DefinitionID,
                 new(
-                    Game,
+                    assets.Game,
                     identifier: tileset.Identifier,
                     atlas: GetTilesetTexture(assets, tileset),
                     tileCount: new(tileset.TileCountX, tileset.TileCountY),
@@ -53,22 +56,23 @@ public class LDTKLoader : AssetLoaderStage {
         }
 
         foreach (LayerSaveDefinition layer in data.Definitions.Layers) {
-            Storage.LayerDefinitions.Add(layer.DefinitionID, layer);
+            storage.LayerDefinitions.Add(layer.DefinitionID, layer);
         }
 
         foreach (LevelSaveReference levelRef in data.Levels) {
-            Storage.Add(levelRef.NameID, levelRef);
+            storage.Add(levelRef.NameID, levelRef);
         }
 
-        assets.RegisterCustomAssetStorage<LDTKLevelInstance>(Storage);
-    }
+        foreach ((string id, Action<Actor, EntitySaveData> func) in TempActorRegistry) {
+            storage.RegisterActor(id, func);
+        }
 
-    static string GetFolderPath(string path)
-        => Path.Join(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+        assets.RegisterCustomAssetStorage<LDTKLevelInstance>(storage);
+    }
 
     static Subtexture GetTilesetTexture(Assets assets, TilesetSaveDefinition tileset) {
         string path = Path.Join(
-                Path.GetDirectoryName(tileset.TexturePath[(assets.Config.TextureFolder.Length + 1)..]),
+                Path.GetDirectoryName(tileset.TexturePath[(assets.Config.TextureGroup.Length + 1)..]),
                 Path.GetFileNameWithoutExtension(tileset.TexturePath)
             ).Replace("\\", "/");
 
@@ -76,7 +80,7 @@ public class LDTKLoader : AssetLoaderStage {
     }
 
     public LDTKLoader RegisterActor(string id, Action<Actor, EntitySaveData> func) {
-        Storage.RegisterActor(id, func);
+        TempActorRegistry.Add(id, func);
         return this;
     }
 }

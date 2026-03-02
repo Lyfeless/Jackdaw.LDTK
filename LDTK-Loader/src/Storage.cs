@@ -72,7 +72,7 @@ public class LDTKStorage(Game game, string group) : IAssetStorage {
                                 continue;
                             }
                             Actor newEntity = new(Game);
-                            newEntity.Match.Name = entityData.InstanceID;
+                            newEntity.Match.Name = entityData.NameID;
                             newEntity.Match.Guid = new Guid(entityData.InstanceID);
                             newEntity.Position = new(entityData.Position[0], entityData.Position[1]);
                             ActorRegistry[entityData.NameID](newEntity, entityData);
@@ -91,7 +91,8 @@ public class LDTKStorage(Game game, string group) : IAssetStorage {
                         LDTKTileset tileset = Tilesets[(int)layerData.Tileset];
                         LDTKTileLayer tiles = new(Game, tileset, new(layerData.Width, layerData.Height), layerData.TileSize, new(layerData.OffsetX, layerData.OffsetY));
                         foreach (TileSaveData tile in layerData.Tiles) {
-                            tiles.AddTileStackLocal(tileset.GetTileCoord(new Point2(tile.Source[0], tile.Source[1])), new(tile.Position[0], tile.Position[1]));
+                            Point2 tileCoord = tiles.LocalToTileCoord(new Point2(tile.Position[0], tile.Position[1])).FloorToPoint2();
+                            tiles.AddTileStackEnd(tileset.GetTileCoord(new Point2(tile.Source[0], tile.Source[1])), tileCoord);
                         }
                         newLayer.Components.Add(tiles);
                     }

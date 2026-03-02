@@ -42,18 +42,17 @@ public class LDTKTile() {
     /// <param name="elements">The tile elements in the tile's stack.</param>
     /// <param name="flip">The tile's flip, stored as X on the first bit and Y on the second bit.</param>
     public LDTKTile(LDTKTileElement[] elements, int flip = 0) : this() {
-        foreach (LDTKTileElement element in elements) {
-            Add(element);
-        }
+        Elements = [.. elements];
+        SetValues();
 
         Flip = flip;
     }
 
     /// <summary>
-    /// Add a tile element to the element stack.
+    /// Add a tile element to the tile.
     /// </summary>
-    /// <param name="element"></param>
-    /// <returns></returns>
+    /// <param name="element">The element to add</param>
+    /// <returns>If the tile was able to add the element.</returns>
     public bool Add(LDTKTileElement element) {
         Elements.Add(element);
         SetValues();
@@ -61,24 +60,32 @@ public class LDTKTile() {
     }
 
     /// <summary>
-    /// Remove the top element in the element stack.
+    /// Add a tile element at the given index.
     /// </summary>
-    /// <returns></returns>
-    public bool Remove() {
-        if (Empty) { return false; }
-
-        Elements.RemoveAt(Elements.Count - 1);
+    /// <param name="element"></param>
+    /// <param name="index"></param>
+    /// <returns>If the tile was able to add the element.</returns>
+    public bool Insert(LDTKTileElement element, int index) {
+        if (index < 0 || index > Elements.Count) { return false; }
+        Elements.Insert(index, element);
         SetValues();
         return true;
     }
 
     /// <summary>
-    /// Remove the element at a specified index in the element stack.
+    /// Remove the last element in the tile.
+    /// </summary>
+    /// <returns></returns>
+    public bool Remove() => RemoveAt(Elements.Count - 1);
+
+    /// <summary>
+    /// Remove the element at the given index.
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
     public bool RemoveAt(int index) {
-        if (Elements.Count <= index) { return false; }
+        if (Empty || index < 0 || index >= Elements.Count) { return false; }
+
         Elements.RemoveAt(index);
         SetValues();
         return true;

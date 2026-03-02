@@ -6,43 +6,25 @@ namespace Jackdaw.Loader.LDTK;
 /// <summary>
 /// Loaded instance of an LDTK tile grid layer.
 /// </summary>
-public class LDTKTileLayer : Component, ISpatialGrid<Point2, LDTKTile> {
+public class LDTKTileLayer : Component, IStackableGrid<Point2?, LDTKTile?>, ISpatialGrid {
     readonly GridCollider colliderGrid;
     readonly CollisionComponent collider;
     readonly GridRenderComponent renderer;
 
-    readonly Grid<LDTKTile> Tiles;
+    readonly Grid<LDTKTile?> Tiles;
     readonly LDTKTileset Tileset;
 
     Vector2 position;
-
-    /// <summary>
-    /// The offset from the actor origin.
-    /// </summary>
-    public Vector2 Position {
-        get => position;
-        set => position = value;
-    }
-
     Vector2 tileSize;
 
-    /// <summary>
-    /// The width and height of a single tile.
-    /// </summary>
-    public Vector2 TileSize {
-        get => tileSize;
-        set => tileSize = value;
+    public Vector2 Position {
+        get => position;
+        set {
+            position = value;
+            colliderGrid.Position = value;
+            renderer.Position = value;
+        }
     }
-
-    /// <summary>
-    /// The x and y tilecount of the grid.
-    /// </summary>
-    public Point2 GridSize => Tiles.Size;
-
-    /// <summary>
-    /// The total size the layer covers.
-    /// </summary>
-    public Vector2 Size => Tiles.Size * tileSize;
 
     /// <summary>
     /// Loaded instance of an LDTK tile grid layer.
@@ -54,9 +36,9 @@ public class LDTKTileLayer : Component, ISpatialGrid<Point2, LDTKTile> {
     /// <param name="position">The grid's position relative to the level position.</param>
     public LDTKTileLayer(Game game, LDTKTileset tileset, Point2 gridSize, int tileSize, Vector2 position) : base(game) {
         this.tileSize = new(tileSize);
-        Tiles = new(gridSize);
-        Tileset = tileset;
         this.position = position;
+        Tileset = tileset;
+        Tiles = new(gridSize);
 
         colliderGrid = new GridCollider(gridSize, this.tileSize);
         collider = new(game, colliderGrid);
@@ -64,8 +46,8 @@ public class LDTKTileLayer : Component, ISpatialGrid<Point2, LDTKTile> {
     }
 
     protected override void Added() {
-        Actor.Components.Add(collider);
-        Actor.Components.Add(renderer);
+        Actor.Components.AddAfter(collider, this);
+        Actor.Components.AddAfter(renderer, this);
     }
 
     protected override void Removed() {
@@ -74,71 +56,78 @@ public class LDTKTileLayer : Component, ISpatialGrid<Point2, LDTKTile> {
         Actor.Components.Remove(renderer);
     }
 
-    /// <summary>
-    /// Set a tile to a new value.
-    /// </summary>
-    /// <param name="tilesetCoord">The tile coordinate from the tileset.</param>
-    /// <param name="gridCoord">The location on the grid to set.</param>
-    public void SetTile(Point2 tilesetCoord, Point2 gridCoord) {
-        LDTKTileElement? tileElement = Tileset?.Get(tilesetCoord);
-        if (tileElement == null) { return; }
-        LDTKTile tile = new(tileElement);
-        Tiles.Set(tile, gridCoord);
-        UpdateGrids(tile, gridCoord);
+    public Vector2 TileSize => tileSize;
+
+    public Point2 TileCount => Tiles.TileCount;
+
+    public Rect Bounds => new(Position, TileCount * TileSize);
+
+    public IGrid<Point2?, LDTKTile?> Set(Point2? tilesetCoord, int tileX, int tileY) => Set(tilesetCoord, new(tileX, tileY));
+
+    public IGrid<Point2?, LDTKTile?> Set(Point2? tilesetCoord, Point2 tile) {
+        LDTKTile? instance = CoordToTile(tilesetCoord);
+        Tiles.Set(instance, tile);
+        UpdateGrids(instance, tile);
+        return this;
     }
 
-    /// <summary>
-    /// Stack another tile onto an existing tile.
-    /// </summary>
-    /// <param name="tilesetCoord">The tile coordinate from the tileset.</param>
-    /// <param name="gridCoord">The location on the grid to stack.</param>
-    public void AddTileStack(Point2 tilesetCoord, Point2 gridCoord) {
-        LDTKTileElement? tileElement = Tileset?.Get(tilesetCoord);
-        if (tileElement == null) { return; }
-        LDTKTile? tile = Tiles.Get(gridCoord);
-        if (tile == null) {
-            tile = new();
-            Tiles.Set(tile, gridCoord);
+    public LDTKTile? Get(int tileX, int tileY) => Get(new(tileX, tileY));
+    public LDTKTile? Get(Point2 tile) => Tiles.Get(tile);
+
+    public bool Contains(int tileX, int tileY) => Contains(new(tileX, tileY));
+    public bool Contains(Point2 tile) => Tiles.Contains(tile);
+
+    public IStackableGrid<Point2?, LDTKTile?> AddTileStackStart(Point2? element, int tileX, int tileY) => AddTileStackStart(element, new(tileX, tileY));
+    public IStackableGrid<Point2?, LDTKTile?> AddTileStackStart(Point2? element, Point2 tile) => AddTileStackAt(element, tile, 0);
+
+    public IStackableGrid<Point2?, LDTKTile?> AddTileStackEnd(Point2? element, int tileX, int tileY) => AddTileStackEnd(element, new(tileX, tileY));
+    public IStackableGrid<Point2?, LDTKTile?> AddTileStackEnd(Point2? element, Point2 tile) => AddTileStackAt(element, tile, -1);
+    public IStackableGrid<Point2?, LDTKTile?> AddTileStackAt(Point2? element, int tileX, int tileY, int index) => AddTileStackAt(element, new(tileX, tileY), index);
+    public IStackableGrid<Point2?, LDTKTile?> AddTileStackAt(Point2? element, Point2 tile, int index) {
+        LDTKTileElement? tileElement = CoordToTileElement(element);
+        if (tileElement == null) { return this; }
+
+        LDTKTile? instance = Tiles.Get(tile);
+        if (instance == null) {
+            instance = new(tileElement);
+            Tiles.Set(instance, tile);
         }
-        tile.Add(tileElement);
-        UpdateGrids(tile, gridCoord);
-    }
-
-    /// <summary>
-    /// Remove the top element of a stack of tiles.
-    /// </summary>
-    /// <param name="gridCoord">The location to remove from.</param>
-    public void RemoveTileStack(Point2 gridCoord) {
-        LDTKTile? tile = Tiles.Get(gridCoord);
-        if (tile?.Remove() ?? false) {
-            if (tile.Empty) {
-                tile = null;
-                Tiles.Set(null, gridCoord);
-            }
-            UpdateGrids(tile, gridCoord);
+        else {
+            if (index == -1) { index = instance.ElementCount; }
+            instance.Insert(tileElement, index);
         }
+
+        UpdateGrids(instance, tile);
+
+        return this;
     }
 
-    /// <summary>
-    /// Reset a tile to empty.
-    /// </summary>
-    /// <param name="gridCoord">The location to reset.</param>
-    public void ClearTile(Point2 gridCoord) {
-        Tiles.Set(null, gridCoord);
-        UpdateGrids(null, gridCoord);
-    }
+    public IStackableGrid<Point2?, LDTKTile?> RemoveTileStackStart(int tileX, int tileY) => RemoveTileStackStart(new(tileX, tileY));
+    public IStackableGrid<Point2?, LDTKTile?> RemoveTileStackStart(Point2 tile) => RemoveTileStackAt(tile, 0);
+    public IStackableGrid<Point2?, LDTKTile?> RemoveTileStackEnd(int tileX, int tileY) => RemoveTileStackEnd(new(tileX, tileY));
+    public IStackableGrid<Point2?, LDTKTile?> RemoveTileStackEnd(Point2 tile) => RemoveTileStackAt(tile, -1);
+    public IStackableGrid<Point2?, LDTKTile?> RemoveTileStackAt(int tileX, int tileY, int index) => RemoveTileStackAt(new(tileX, tileY), index);
+    public IStackableGrid<Point2?, LDTKTile?> RemoveTileStackAt(Point2 tile, int index) {
+        LDTKTile? instance = Tiles.Get(tile);
+        if (instance == null) { return this; }
 
-    /// <summary>
-    /// Get the current data of a tile.
-    /// </summary>
-    /// <param name="gridCoord">The tile location to read from.</param>
-    /// <returns>The tile instance at the given location, null if out of bounds or not assigned.</returns>
-    public LDTKTile? GetTile(Point2 gridCoord) {
-        return Tiles.Get(gridCoord);
+        if (instance.ElementCount > 1) {
+            if (index == -1) { index = instance.ElementCount; }
+            instance.RemoveAt(index);
+        }
+        else { Tiles.Set(null, tile); }
+
+        UpdateGrids(instance, tile);
+
+        return this;
     }
 
     void UpdateGrids(LDTKTile? tile, Point2 gridCoord) {
-        colliderGrid.SetTile(tile?.Collider, gridCoord);
-        renderer.SetTile(tile?.Sprite, gridCoord);
+        colliderGrid.Set(tile?.Collider, gridCoord);
+        renderer.Set(tile?.Sprite, gridCoord);
     }
+
+    LDTKTile? CoordToTile(Point2? tilesetCoord) => ElementToTile(CoordToTileElement(tilesetCoord));
+    LDTKTileElement? CoordToTileElement(Point2? tilesetCoord) => tilesetCoord == null ? null : Tileset.Get((Point2)tilesetCoord);
+    static LDTKTile? ElementToTile(LDTKTileElement? element) => element == null ? null : new(element);
 }

@@ -34,7 +34,7 @@ public class LDTKTileset {
     /// <summary>
     /// The gird size of the tileset.
     /// </summary>
-    public Point2 Size => tileElements.Size;
+    public Point2 Size => tileElements.TileCount;
 
     /// <summary>
     /// Get a tile element from the tileset.
@@ -69,7 +69,7 @@ public class LDTKTileset {
     /// </summary>
     /// <param name="id">The tile id.</param>
     /// <returns>The position as a tile coordinate.</returns>
-    public Point2 GetTileCoord(int id) => new(id % tileElements.Size.X, id / tileElements.Size.X);
+    public Point2 GetTileCoord(int id) => new(id % tileElements.TileCount.X, id / tileElements.TileCount.X);
 
     /// <summary>
     /// Data of a single grid tileset.
@@ -101,8 +101,8 @@ public class LDTKTileset {
 
         DefaultCollider = new RectangleCollider(new Rect(0, 0, TileSize, TileSize));
 
-        for (int x = 0; x < tileElements.Size.X; ++x) {
-            for (int y = 0; y < tileElements.Size.Y; ++y) {
+        for (int x = 0; x < tileElements.TileCount.X; ++x) {
+            for (int y = 0; y < tileElements.TileCount.Y; ++y) {
                 Point2 gridCoord = new(x, y);
                 int id = (y * tileCount.X) + x;
                 tileElements.Set(new() {

@@ -196,8 +196,8 @@ public class LDTKTileset {
                     return new CircleCollider(new Circle(x, y, r));
                 }
             case "POLY": {
-                    if (args.Length % 2 != 0) { return null; }
-                    Vector2[] points = new Vector2[args.Length / 2];
+                    if (args.Length % 2 == 0) { return null; }
+                    Vector2[] points = new Vector2[(args.Length - 1) / 2];
                     for (int i = 0; i < points.Length; ++i) {
                         if (
                             !float.TryParse(args[(i * 2) + 1], out float x) ||

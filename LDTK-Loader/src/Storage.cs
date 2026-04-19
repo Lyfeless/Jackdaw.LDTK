@@ -26,6 +26,7 @@ public class LDTKStorage(Game game, string group) : IAssetStorage {
     };
 
     public void Add(string name, object asset) { Levels.Add(name, (LevelSaveReference)asset); }
+    public void Remove(string name) { Levels.Remove(name); }
 
     public object Get(string name) {
         AssetProviderItem level = new(Group, name, LEVEL_EXTENSION);

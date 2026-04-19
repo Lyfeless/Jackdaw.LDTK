@@ -11,6 +11,8 @@ public class LDTKLoader : AssetLoaderStage {
 
     readonly Dictionary<string, Action<Actor, EntitySaveData>> TempActorRegistry = [];
 
+    bool loaded = false;
+
     public LDTKLoader(string group, Func<string, int?> collisionTagFunc) {
         Group = group;
         CollisionTagFunc = collisionTagFunc;
@@ -18,7 +20,18 @@ public class LDTKLoader : AssetLoaderStage {
         SetAfter<PackerLoader>();
     }
 
-    public override void Run(Assets assets) {
+    public override AssetProviderItem[] GetLoadOptions(Assets assets) => [];
+
+    public override void RunLoad(Assets assets, AssetCollection collection) {
+        if (!loaded) {
+            loaded = true;
+            Run(assets);
+        }
+    }
+
+    public override void RunUnload(Assets assets, AssetCollection collection) { }
+
+    void Run(Assets assets) {
         LDTKStorage storage = new(assets.Game, Group);
 
         AssetProviderItem world = new("", Group, WORLD_EXTENSION);
@@ -67,7 +80,7 @@ public class LDTKLoader : AssetLoaderStage {
             storage.RegisterActor(id, func);
         }
 
-        assets.RegisterCustomAssetStorage<LDTKLevelInstance>(storage);
+        assets.Storage.Register<LDTKLevelInstance>(storage);
     }
 
     static Subtexture GetTilesetTexture(Assets assets, TilesetSaveDefinition tileset) {

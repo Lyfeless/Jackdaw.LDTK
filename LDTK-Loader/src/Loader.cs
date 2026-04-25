@@ -5,95 +5,82 @@ namespace Jackdaw.Loader.LDTK;
 
 public class LDTKLoader : AssetLoaderStage {
     const string WORLD_EXTENSION = ".ldtk";
+    const string BACKUP_FOLDER = "backups";
 
-    readonly string Group;
-    readonly Func<string, int?> CollisionTagFunc;
+    public readonly LDTKConfig Config;
 
-    readonly Dictionary<string, Action<Actor, EntitySaveData>> TempActorRegistry = [];
+    readonly Dictionary<string, string[]> ProjectWorldCache = [];
 
-    bool loaded = false;
-
-    public LDTKLoader(string group, Func<string, int?> collisionTagFunc) {
-        Group = group;
-        CollisionTagFunc = collisionTagFunc;
-
+    public LDTKLoader(LDTKConfig config) {
+        Config = config;
         SetAfter<PackerLoader>();
     }
 
-    public override AssetProviderItem[] GetLoadOptions(Assets assets) => [];
+    public override AssetProviderItem[] GetLoadOptions(Assets assets)
+        => [.. assets.Provider.GetItemsInGroup(Config.Group, WORLD_EXTENSION).Where(e => !IsBackup(e.Name))];
 
     public override void RunLoad(Assets assets, AssetCollection collection) {
-        if (!loaded) {
-            loaded = true;
-            Run(assets);
+        foreach (AssetProviderItem item in Filter(collection)) {
+            JsonElementProjectRoot project = GetProject(assets, item);
+            CacheWorlds(project.InstanceID, LoadWorlds(assets, item.Name, project));
         }
     }
 
-    public override void RunUnload(Assets assets, AssetCollection collection) { }
-
-    void Run(Assets assets) {
-        LDTKStorage storage = new(assets.Game, Group);
-
-        AssetProviderItem world = new("", Group, WORLD_EXTENSION);
-        if (!assets.Provider.HasItem(world)) {
-            Log.Warning($"LDTKLoader: Unable to load level definition file. No level definition file found for {world}.");
-            return;
+    public override void RunUnload(Assets assets, AssetCollection collection) {
+        foreach (AssetProviderItem item in Filter(collection)) {
+            if (!ProjectWorldCache.TryGetValue(item.Name, out string[]? worlds)) { return; }
+            foreach (string world in worlds) {
+                RemoveAsset<LDTKWorld>(assets, world);
+            }
         }
+    }
 
-        WorldSaveData? data;
+    string[] LoadWorlds(Assets assets, string name, JsonElementProjectRoot project) {
+        LDTKWorldDefinitions defs = new(assets, project.Definitions);
+        return IsMultiWorld(project)
+            ? [.. project.Worlds.Select(e => LoadWorld(assets, defs, e, project.ExternalLevels))]
+            : [LoadWorld(assets, defs, AsWorld(name, project), project.ExternalLevels)];
+    }
+
+    string LoadWorld(Assets assets, LDTKWorldDefinitions defs, JsonElementWorld worldData, bool external) {
+        LDTKWorld world = new(assets, defs, worldData, Config, external);
+        AddAsset(assets, world.Name, world);
+        return world.Name;
+    }
+
+    void CacheWorlds(string project, params string[] worlds)
+        => ProjectWorldCache.TryAdd(project, worlds);
+
+    static JsonElementProjectRoot GetProject(Assets assets, AssetProviderItem item) {
         try {
-            using Stream stream = assets.Provider.GetItemStream(world);
-            Span<byte> bytes = new byte[stream.Length];
-            stream.ReadExactly(bytes);
-            data = JsonSerializer.Deserialize(bytes, LDTKSourceGenerationContext.Default.WorldSaveData)
-                ?? throw new Exception();
+            using Stream stream = assets.Provider.GetItemStream(item);
+            JsonElementProjectRoot? project = JsonSerializer.Deserialize(stream, LDTKSourceGenerationContext.Default.JsonElementProjectRoot);
+            if (project != null) { return (JsonElementProjectRoot)project; }
         } catch {
             Log.Warning($"LDTKLoader: Unable to load level definition file. An error occured when loading data.");
-            return;
         }
-
-        foreach (TilesetSaveDefinition tileset in data.Definitions.Tilesets) {
-            storage.Tilesets.Add(
-                tileset.DefinitionID,
-                new(
-                    assets.Game,
-                    identifier: tileset.Identifier,
-                    atlas: GetTilesetTexture(assets, tileset),
-                    tileCount: new(tileset.TileCountX, tileset.TileCountY),
-                    tileSize: tileset.GridSize,
-                    enumTags: tileset.TileTypes,
-                    customData: tileset.CustomData,
-                    collisionTagFunc: CollisionTagFunc
-                )
-            );
-        }
-
-        foreach (LayerSaveDefinition layer in data.Definitions.Layers) {
-            storage.LayerDefinitions.Add(layer.DefinitionID, layer);
-        }
-
-        foreach (LevelSaveReference levelRef in data.Levels) {
-            storage.Add(levelRef.NameID, levelRef);
-        }
-
-        foreach ((string id, Action<Actor, EntitySaveData> func) in TempActorRegistry) {
-            storage.RegisterActor(id, func);
-        }
-
-        assets.Storage.Register<LDTKLevelInstance>(storage);
+        return new();
     }
 
-    static Subtexture GetTilesetTexture(Assets assets, TilesetSaveDefinition tileset) {
-        string path = Path.Join(
-                Path.GetDirectoryName(tileset.TexturePath[(assets.Config.TextureGroup.Length + 1)..]),
-                Path.GetFileNameWithoutExtension(tileset.TexturePath)
-            ).Replace("\\", "/");
+    AssetProviderItem[] Filter(AssetCollection collection)
+        => collection.Filter(Config.Group, WORLD_EXTENSION);
 
-        return assets.GetSubtexture(path);
+    static bool IsMultiWorld(JsonElementProjectRoot project) => project.Worlds.Length > 0;
+
+    static JsonElementWorld AsWorld(string name, JsonElementProjectRoot project) => new() {
+        Name = name,
+        InstanceID = project.InstanceID,
+        Levels = project.Levels,
+        WorldGridWidth = project.WorldGridWidth ?? 0,
+        WorldGridHeight = project.WorldGridHeight ?? 0,
+        WorldLayout = project.WorldLayout ?? JsonEnumWorldLayout.Free,
+    };
+
+    const string BACKLINK = "../";
+    public static string RemoveBacklinks(string path) {
+        while (path.StartsWith(BACKLINK)) { path = path[BACKLINK.Length..]; }
+        return path;
     }
 
-    public LDTKLoader RegisterActor(string id, Action<Actor, EntitySaveData> func) {
-        TempActorRegistry.Add(id, func);
-        return this;
-    }
+    static bool IsBackup(string path) => path.Split('/').Contains(BACKUP_FOLDER);
 }

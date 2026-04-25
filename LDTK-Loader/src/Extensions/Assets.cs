@@ -1,9 +1,7 @@
 namespace Jackdaw.Loader.LDTK;
 
-public static class AssetsExtensions
-{
-    extension(Assets assets)
-    {
-        public LDTKLevelInstance GetLDTKLevelInstance(string name) => assets.Get<LDTKLevelInstance>(name);
+public static class AssetsExtensions {
+    extension(Assets assets) {
+        public LDTKWorld GetLDTKWorld(string name) => assets.Get<LDTKWorld>(name);
     }
 }

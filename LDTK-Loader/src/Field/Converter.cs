@@ -60,7 +60,7 @@ public class FieldContainerJsonConverter : JsonConverter<FieldContainer> {
                 }
             }
 
-            reader.Skip();
+            reader.TrySkip();
             reader.Read();
         }
 
@@ -88,7 +88,7 @@ public class FieldContainerJsonConverter : JsonConverter<FieldContainer> {
             if (args.Ready) { return CreateField(args); }
 
             if (reader.TokenType == JsonTokenType.StartObject || reader.TokenType == JsonTokenType.StartArray) {
-                reader.Skip();
+                reader.TrySkip();
                 reader.Read();
             }
         }
@@ -130,7 +130,7 @@ public class FieldContainerJsonConverter : JsonConverter<FieldContainer> {
                 Data = reader
             }));
             if (reader.TokenType == JsonTokenType.StartObject || reader.TokenType == JsonTokenType.StartArray) {
-                reader.Skip();
+                reader.TrySkip();
                 // reader.Read();
             }
             reader.Read();

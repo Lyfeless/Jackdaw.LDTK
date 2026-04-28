@@ -3,6 +3,8 @@ namespace Jackdaw.Loader.LDTK;
 public readonly struct TwoAxisFlip(bool flipX, bool flipY) {
     public readonly bool FlipX = flipX;
     public readonly bool FlipY = flipY;
+    public readonly bool Neither = !flipX && !flipY;
+    public readonly bool Both = flipX && flipY;
 
     public TwoAxisFlip(int flipBits) : this(BitSet(flipBits, 0), BitSet(flipBits, 1)) { }
 

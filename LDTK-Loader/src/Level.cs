@@ -1,11 +1,27 @@
-using System.Data.Common;
 using System.Numerics;
 using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
 public readonly struct LDTKLevel {
+    public enum NeighborLocation {
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
+        UP_LEFT,
+        UP_RIGHT,
+        DOWN_LEFT,
+        DOWN_RIGHT,
+        BELOW,
+        ABOVE,
+        SAME_LOCATION
+    }
+    public record struct Neighbor(string InstanceID, NeighborLocation Location);
+
     public readonly Actor ActorTree = Actor.Invalid;
+    public readonly Point2 Size;
+    public readonly Neighbor[] Neighbors;
     public readonly FieldContainer Fields = new();
     public readonly LDTKBackground Background = new();
     public readonly bool IsValid = false;
@@ -13,7 +29,10 @@ public readonly struct LDTKLevel {
     internal LDTKLevel(Game game, LDTKWorld world, JsonElementLevel level) {
         IsValid = true;
 
-        BoundsComponent bounds = new(game, Bounds(level));
+        Size = new(level.Width, level.Height);
+        Neighbors = [.. level.Neighbors.Select(e => new Neighbor(e.InstanceID, MapDirection(e.Direction)))];
+
+        BoundsComponent bounds = new(game, new(Size));
         bounds.Match.Name = "LevelBounds";
 
         Background = new(game.Assets, level);
@@ -30,8 +49,8 @@ public readonly struct LDTKLevel {
 
             Actor layer = instance.Type switch {
                 JsonEnumLayerType.Entities => CreateEntityLayer(game, world, new(instance, definition)),
-                JsonEnumLayerType.Tiles => CreateTileLayer(game, new(world, instance, definition, instance.Tiles)),
-                JsonEnumLayerType.AutoLayer => CreateTileLayer(game, new(world, instance, definition, instance.AutoLayerTiles)),
+                JsonEnumLayerType.Tiles => CreateTileLayer(game, world, new(world, instance, definition, instance.Tiles)),
+                JsonEnumLayerType.AutoLayer => CreateTileLayer(game, world, new(world, instance, definition, instance.AutoLayerTiles)),
                 _ => Actor.Invalid
             };
 
@@ -42,6 +61,10 @@ public readonly struct LDTKLevel {
             layer.Position = Position(instance);
             layer.Visible = instance.Visible;
             ActorTree.Children.Add(layer);
+        }
+
+        if (world.Config.CustomElements.CanModifyLevelRoot) {
+            ActorTree = world.Config.CustomElements.OnLevelRootCreate(new(ActorTree, ActorTree), this).Root;
         }
     }
 
@@ -58,25 +81,61 @@ public readonly struct LDTKLevel {
             actor.Match.Name = entity.Name;
             actor.Match.Guid = entity.InstanceID;
             actor.Position = entity.Position - data.Metadata.Offset;
+
+            if (world.Config.CustomElements.CanModifyEntity) {
+                actor = world.Config.CustomElements.OnEntityLoad(actor, entity);
+            }
+
             func(actor, entity);
             layer.Children.Add(actor);
         }
+
+        if (world.Config.CustomElements.CanModifyEntityLayer) {
+            layer = world.Config.CustomElements.OnEntityLayerLoad(layer, data);
+        }
+
         return layer;
     }
 
-    static Actor CreateTileLayer(Game game, LDTKTileLayer data) {
+    static Actor CreateTileLayer(Game game, LDTKWorld world, LDTKTileLayer data) {
         GridRenderComponent spriteGrid = new(game, data.Metadata.Offset, data.GridSize, new(data.Tileset.TileSize, data.Tileset.TileSize));
+        LDTKTileGrid tileGrid = new(game, data.GridSize, data.Tileset.TileSize);
         foreach (LDTKTile tile in data.TileElements) {
-            spriteGrid.AddTileStackEnd(new SpriteSingle(tile.Tile.Texture) {
+            Sprite sprite = new SpriteSingle(tile.TilesetTile.Texture) {
                 FlipX = tile.Flip.FlipX,
                 FlipY = tile.Flip.FlipY
-            }, tile.GridPosition);
+            };
+
+            if (world.Config.CustomElements.CanModifyTileSprite) {
+                sprite = world.Config.CustomElements.OnTileSpriteLoad(sprite, game, tile, data);
+            }
+
+            spriteGrid.AddTileStackEnd(sprite, tile.GridPosition);
+            tileGrid.AddTileStackEnd(tile, tile.GridPosition);
         }
-        Actor layer = Actor.From(spriteGrid);
+        Actor layer = Actor.From(game, spriteGrid, tileGrid);
+
+        if (world.Config.CustomElements.CanModifyTileLayer) {
+            layer = world.Config.CustomElements.OnTileLayerLoad(layer, data);
+        }
+
         return layer;
     }
 
     static Vector2 Position(JsonElementLevel level) => new(level.WorldX, level.WorldY);
     static Vector2 Position(JsonElementLayerInstance layer) => new(layer.TotalOffsetX, layer.TotalOffsetY);
-    static Rect Bounds(JsonElementLevel level) => new(level.Width, level.Height);
+    static NeighborLocation MapDirection(string direction) => direction switch {
+        "n" => NeighborLocation.UP,
+        "s" => NeighborLocation.DOWN,
+        "e" => NeighborLocation.RIGHT,
+        "w" => NeighborLocation.LEFT,
+        "ne" => NeighborLocation.UP_RIGHT,
+        "nw" => NeighborLocation.UP_LEFT,
+        "se" => NeighborLocation.DOWN_LEFT,
+        "sw" => NeighborLocation.DOWN_RIGHT,
+        "<" => NeighborLocation.BELOW,
+        ">" => NeighborLocation.ABOVE,
+        "o" => NeighborLocation.SAME_LOCATION,
+        _ => NeighborLocation.SAME_LOCATION
+    };
 }

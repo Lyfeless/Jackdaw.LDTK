@@ -4,6 +4,7 @@ public class LDTKConfig(string group) {
     public readonly string Group = group;
 
     readonly Dictionary<string, Action<Actor, LDTKEntity>> Entities = [];
+    internal readonly CustomLoaderElementContainer CustomElements = new();
 
     public Action<Actor, LDTKEntity>? GetEntity(string name) => Entities.GetValueOrDefault(name);
 
@@ -12,8 +13,8 @@ public class LDTKConfig(string group) {
         return this;
     }
 
-    public LDTKConfig RegisterLoaderComponent(ILoaderComponent component) {
-        //! FIXME (Alex): Implement...
+    public LDTKConfig RegisterCustomLoaderElement(LDTKCustomLoaderElement element) {
+        CustomElements.Add(element);
         return this;
     }
 }

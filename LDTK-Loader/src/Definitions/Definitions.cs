@@ -8,9 +8,9 @@ public class LDTKWorldDefinitions {
     //  Just keeping a stored reference for the loader to collect when creating an instance.
     internal readonly LDTKLayerDefinitionContainer Layers;
 
-    internal LDTKWorldDefinitions(Assets assets, JsonElementDefinitions data) {
+    internal LDTKWorldDefinitions(Assets assets, LDTKConfig config, JsonElementDefinitions data) {
         Enums = new(data.Enums, data.ExternalEnums);
-        Tilesets = new(assets, data.Tilesets);
+        Tilesets = new(assets, config, data.Tilesets);
         Layers = new(data.Layers);
     }
 }

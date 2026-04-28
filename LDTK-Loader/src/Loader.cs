@@ -36,7 +36,7 @@ public class LDTKLoader : AssetLoaderStage {
     }
 
     string[] LoadWorlds(Assets assets, string name, JsonElementProjectRoot project) {
-        LDTKWorldDefinitions defs = new(assets, project.Definitions);
+        LDTKWorldDefinitions defs = new(assets, Config, project.Definitions);
         return IsMultiWorld(project)
             ? [.. project.Worlds.Select(e => LoadWorld(assets, defs, e, project.ExternalLevels))]
             : [LoadWorld(assets, defs, AsWorld(name, project), project.ExternalLevels)];

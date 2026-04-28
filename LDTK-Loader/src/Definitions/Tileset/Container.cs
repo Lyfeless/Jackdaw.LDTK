@@ -3,9 +3,11 @@ namespace Jackdaw.Loader.LDTK;
 public readonly struct LDTKTilesetContainer {
     public readonly Dictionary<string, LDTKTileset> Entries = [];
 
-    internal LDTKTilesetContainer(Assets assets, JsonElementTilesetDefinition[] tilesets) {
-        foreach (JsonElementTilesetDefinition tileset in tilesets) {
-            Entries.Add(tileset.Name, new(assets, tileset));
+    internal LDTKTilesetContainer(Assets assets, LDTKConfig config, JsonElementTilesetDefinition[] tilesets) {
+        foreach (JsonElementTilesetDefinition data in tilesets) {
+            LDTKTileset tileset = new(assets, data);
+            if (config.CustomElements.CanProcessTilesets) { config.CustomElements.OnTilesetLoad(tileset); }
+            Entries.Add(tileset.Name, tileset);
         }
     }
 

@@ -16,15 +16,16 @@ public readonly struct LDTKBackground {
         HasTexture = level.BackgroundPosition != null && level.BackgroundPath != null;
         if (HasTexture) {
             JsonElementBackgroundPosition data = (JsonElementBackgroundPosition)level.BackgroundPosition!;
+            Rect cropRect = RectFromArray(data.CropBounds);
             string path = LDTKLoader.RemoveBacklinks(level.BackgroundPath!);
-            Rect cropRect = RectFromArray(data.Position);
-            Texture = assets.GetSubtexture(LDTKLoader.RemoveBacklinks(path)).GetClipSubtexture(cropRect);
+            path = AssetProviderItem.FromString(path).Name;
+            Texture = assets.GetSubtexture(path).GetClipSubtexture(cropRect);
             Position = Point2FromArray(data.Position);
             Scale = Vector2FromArray(data.Scale);
         }
     }
 
-    static Rect RectFromArray(int[] values) => new(values[0], values[1], values[2], values[3]);
+    static Rect RectFromArray(float[] values) => new(values[0], values[1], values[2], values[3]);
     static Vector2 Vector2FromArray(float[] values) => new(values[0], values[1]);
     static Point2 Point2FromArray(int[] values) => new(values[0], values[1]);
 }

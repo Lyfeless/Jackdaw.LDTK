@@ -4,13 +4,13 @@ namespace Jackdaw.Loader.LDTK;
 
 public readonly struct LDTKTile {
     public readonly Point2 GridPosition;
-    public readonly LDTKTilesetTile Tile;
+    public readonly LDTKTilesetTile TilesetTile;
     public readonly TwoAxisFlip Flip;
     public readonly float Opacity;
 
     internal LDTKTile(LDTKTileset tileset, JsonElementTileInstance data, JsonElementLayerInstance layer) {
         GridPosition = Position(data, layer);
-        Tile = (LDTKTilesetTile)tileset.ByID(data.TileID)!;
+        TilesetTile = (LDTKTilesetTile)tileset.ByID(data.TileID)!;
         Flip = new(data.Flip);
         Opacity = data.Alpha;
     }

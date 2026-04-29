@@ -47,8 +47,8 @@ public class LDTKWorld {
             ? new FileLevelAccessor(assets, this, level.ExternalDataPath!)
             : new LocalLevelAccessor(level);
 
-    public async Task<LDTKLevel> Load(string name)
-        => new(Assets.Game, this, Levels.GetValueOrDefault(name)?.Get() ?? FailLoad(name));
+    public LDTKLevel Load(string name) => new(Assets.Game, this, Levels.GetValueOrDefault(name)?.Get() ?? FailLoad(name));
+    public async Task<LDTKLevel> LoadAsync(string name) => Load(name);
 
     internal static LDTKWorldLayout MapLayout(JsonEnumWorldLayout layout) => layout switch {
         JsonEnumWorldLayout.GridVania => LDTKWorldLayout.GRIDVANIA,

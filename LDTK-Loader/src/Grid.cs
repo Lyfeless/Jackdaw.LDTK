@@ -3,10 +3,16 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
-public class LDTKTileGrid(Game game, Point2 gridSize, int tileSize) : Component(game), IStackableGrid<LDTKTile, List<LDTKTile>>, ISpatialGrid {
-    readonly Grid<List<LDTKTile>> Grid = new(gridSize);
-    Point2 tileSize = new(tileSize, tileSize);
+public class LDTKTileGridComponent : Component, IStackableGrid<LDTKTile, List<LDTKTile>>, ISpatialGrid {
+    readonly Grid<List<LDTKTile>> Grid;
+    Point2 tileSize;
     Vector2 position;
+
+    public LDTKTileGridComponent(Game game, Point2 gridSize, int tileSize) : base(game) {
+        Active = false;
+        Grid = new(gridSize);
+        this.tileSize = new(tileSize, tileSize);
+    }
 
     public Point2 TileCount => Grid.TileCount;
 

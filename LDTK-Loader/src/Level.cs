@@ -77,7 +77,7 @@ public readonly struct LDTKLevel {
                 continue;
             }
 
-            Actor actor = new(game);
+            Actor actor = Actor.From(new LDTKEntityComponent(game, entity));
             actor.Match.Name = entity.Name;
             actor.Match.Guid = entity.InstanceID;
             actor.Position = entity.Position - data.Metadata.Offset;
@@ -99,7 +99,7 @@ public readonly struct LDTKLevel {
 
     static Actor CreateTileLayer(Game game, LDTKWorld world, LDTKTileLayer data) {
         GridRenderComponent spriteGrid = new(game, data.Metadata.Offset, data.GridSize, new(data.Tileset.TileSize, data.Tileset.TileSize));
-        LDTKTileGrid tileGrid = new(game, data.GridSize, data.Tileset.TileSize);
+        LDTKTileGridComponent tileGrid = new(game, data.GridSize, data.Tileset.TileSize);
         foreach (LDTKTile tile in data.TileElements) {
             Sprite sprite = new SpriteSingle(tile.TilesetTile.Texture) {
                 FlipX = tile.Flip.FlipX,

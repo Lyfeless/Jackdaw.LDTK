@@ -29,3 +29,12 @@ public readonly struct LDTKEntity {
     static Point2 FromArray(int[] values) => new(values[0], values[1]);
     static Vector2 FromArray(float[] values) => new(values[0], values[1]);
 }
+
+public class LDTKEntityComponent : Component {
+    public LDTKEntity Entity;
+
+    public LDTKEntityComponent(Game game, LDTKEntity entity) : base(game) {
+        Active = false;
+        Entity = entity;
+    }
+}

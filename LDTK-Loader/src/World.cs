@@ -2,14 +2,14 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
-public enum LDTKWorldLayout {
-    FREE,
-    GRIDVANIA,
-    LINEAR_HORIZONTAL,
-    LINEAR_VERTICAL
-}
-
 public class LDTKWorld {
+    public enum LDTKWorldLayout {
+        FREE,
+        GRIDVANIA,
+        LINEAR_HORIZONTAL,
+        LINEAR_VERTICAL
+    }
+
     public readonly LDTKConfig Config;
 
     public readonly string Name;

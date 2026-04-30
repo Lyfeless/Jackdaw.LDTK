@@ -1,6 +1,15 @@
 
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// Custom loader behavior for replacing a tile's default sprite with an animation. <br/>
+/// Animations are defined using a line in the tile's custom data. <br/>
+/// Format: <br/>
+///     <c>[entryName]: [animationName]</c> <br/>
+/// Example: <br/>
+///     <c>anim: Tile/Idle</c>
+/// </summary>
+/// <param name="entryName">The id used to signify an animation in tile's custom data.</param>
 public class LDTKAnimationLoaderElement(string entryName) : LDTKCustomLoaderElement {
     readonly string Name = entryName;
 

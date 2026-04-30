@@ -4,21 +4,71 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
-public struct LDTCollisionConfig() {
+/// <summary>
+/// Configuration information for the collision loader.
+/// </summary>
+public struct LDTKCollisionConfig() {
+    /// <summary>
+    /// The id used to signify collision data in tile's custom data.
+    /// </summary>
     public required string EntryName;
+
+    /// <summary>
+    /// The function for converting editor data into collider tags.
+    /// </summary>
     public required Func<string, int?> TagFunction;
+
+    /// <summary>
+    /// The source of the editor data used for creating collider tags.
+    /// </summary>
     public LDTKCollisionLoaderElement.TagSource CollisionTagType = LDTKCollisionLoaderElement.TagSource.TILESET_ENUM;
+
+    /// <summary>
+    /// The id used to signify collision tags in tile's custom data. <br/>
+    /// Only used if <see cref="CollisionTagType"/> is set to <see cref="LDTKCollisionLoaderElement.CUSTOM_DATA"/>. <br/>
+    /// Format: <br/>
+    ///     <c>[tagEntryName]: [tag1] [tag2] [tag3] ...</c> <br/>
+    /// Example: <br/>
+    ///     <c>collisionTags: Ground Hazard Liquid</c>
+    /// </summary>
     public string CustomDataCollisionTagName = "collisionTags";
+
+    /// <summary>
+    /// If the positions in the collision data are percents of the tile size or hard-coded coordinates.
+    /// </summary>
     public bool PercentPositions = false;
 }
 
-public class LDTKCollisionLoaderElement(LDTCollisionConfig config) : LDTKCustomLoaderElement {
+/*
+tags using a custom data entry or a tileset's enum flags. Supports multiple collision shapes:
+- FULL: A rectangle collider the exact size of the tile. Syntax: `[ENTRY NAME]: FULL`
+- RECT: A rectangle collider of any size. Syntax: `[ENTRY NAME]: RECT [x] [y] [width] [height]` ex: `collider: RECT 4 4 8 8`
+- CIRCLE: A circular collider centered on its x/y position. Syntax: `[ENTRY NAME]: CIRCLE [x] [y] [radius]` ex `collider: CIRCLE 8 8 4`
+- POLY: A convex polygon collider made of an abritrary bumber of points. Syntax: `[ENTRY NAME]: POLY [x1] [y1] [x2] [y2] ...` ex `collider: POLY 0 8 16 8 8 16 0 8`
+*/
+
+/// <summary>
+/// Custom loader behavior for creating tile-based colliders.
+/// Colliders are defined using a line in the tile's custom data. <br/>
+/// Format: <br/>
+///     <c>[entryName]: FULL</c> <br/>
+///     <c>[entryName]: RECT [x] [y] [width] [height]</c> <br/>
+///     <c>[entryName]: CIRCLE [x] [y] [radius]</c> <br/>
+///     <c>[entryName]: POLY [x1] [y1] [x2] [y2] ...</c> <br/>
+/// Example: <br/>
+///     <c>collider: FULL</c> <br/>
+///     <c>collider: RECT 4 4 8 8</c> <br/>
+///     <c>collider: CIRCLE 8 8 4</c> <br/>
+///     <c>collider: POLY 0 8 16 8 8 16 0 8</c> <br/>
+/// </summary>
+/// <param name="config">The collision config data.</param>
+public class LDTKCollisionLoaderElement(LDTKCollisionConfig config) : LDTKCustomLoaderElement {
     public enum TagSource {
         TILESET_ENUM,
         CUSTOM_DATA
     }
 
-    readonly LDTCollisionConfig Config = config;
+    readonly LDTKCollisionConfig Config = config;
 
     readonly Dictionary<(int, int), ITileCollider> colliders = [];
 

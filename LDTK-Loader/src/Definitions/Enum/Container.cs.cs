@@ -1,5 +1,8 @@
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// A container for storing and accessing editor enum data.
+/// </summary>
 public readonly struct LDTKEnumContainer {
     public readonly Dictionary<string, LDTKEnum> Entries = [];
 

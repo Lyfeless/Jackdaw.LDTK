@@ -2,14 +2,44 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// Information for a tileset.
+/// </summary>
 public readonly struct LDTKTileset {
-    public readonly string Name;
+    /// <summary>
+    /// The tileset's internal numeric id.
+    /// </summary>
     public readonly int ID;
+
+    /// <summary>
+    /// The tileset's name id.
+    /// </summary>
+    public readonly string Name;
+
+    /// <summary>
+    /// The texture atlas for the tileset.
+    /// </summary>
     public readonly Subtexture Atlas;
+
+    /// <summary>
+    /// The size of the tileset in grid coordinates.
+    /// </summary>
     public readonly Point2 GridSize;
+
+    /// <summary>
+    /// The size of a single tile. <br/>
+    /// All tiles are square, so this can be used for the width and height.
+    /// </summary>
     public readonly int TileSize;
+
+    /// <summary>
+    /// Editor tags for sorting the tileset.
+    /// </summary>
     public readonly string[] Tags;
 
+    /// <summary>
+    /// All tiles defined in the tileset.
+    /// </summary>
     public readonly Dictionary<int, LDTKTilesetTile> Tiles = [];
 
     internal LDTKTileset(Assets assets, JsonElementTilesetDefinition data) {
@@ -35,12 +65,49 @@ public readonly struct LDTKTileset {
         }
     }
 
+    /// <summary>
+    /// Get a tile's numeric id from its grid position.
+    /// </summary>
+    /// <param name="gridPosition">The grid position of the tile.</param>
+    /// <returns>The numeric id of the given position.</returns>
     public int GetID(Point2 gridPosition) => GetID(gridPosition.X, gridPosition.Y);
+
+    /// <summary>
+    /// Get a tile's numeric id from its grid position.
+    /// </summary>
+    /// <param name="x">The x coordinate of the tile.</param>
+    /// <param name="y">The y coordinate of the tile.</param>
+    /// <returns>The numeric id of the given position.</returns>
     public int GetID(int x, int y) => (y * GridSize.X) + x;
+
+    /// <summary>
+    /// Get a tile's grid position from its numeric id.
+    /// </summary>
+    /// <param name="id">The tile's numeric id.</param>
+    /// <returns>The grid position of the givenm numeric id.</returns>
     public Point2 GetGridPosition(int id) => new(id % GridSize.X, id / GridSize.Y);
 
+    /// <summary>
+    /// Find a tile by its numeric id.
+    /// </summary>
+    /// <param name="id">The tile's numeric id.</param>
+    /// <returns>The tile, null if it doesn't exist.</returns>
     public LDTKTilesetTile? ByID(int id) => Tiles.GetValueOrDefault(id);
+
+    /// <summary>
+    /// Find a tile by its grid position.
+    /// </summary>
+    /// <param name="id">The tile's grid position.</param>
+    /// <returns>The tile, null if it doesn't exist.</returns>
     public LDTKTilesetTile? ByPosition(Point2 gridPosition) => ByID(GetID(gridPosition));
+
+    /// <summary>
+    /// Find a tile by its grid position.
+    /// </summary>
+    /// <param name="x">The x coordinate of the tile.</param>
+    /// <param name="y">The y coordinate of the tile.</param>
+    /// <returns>The tile, null if it doesn't exist.</returns>
+    public LDTKTilesetTile? ByPosition(int x, int y) => ByID(GetID(x, y));
 
     static Subtexture GetAtlas(Assets assets, string path) {
         path = LDTKLoader.RemoveBacklinks(path);

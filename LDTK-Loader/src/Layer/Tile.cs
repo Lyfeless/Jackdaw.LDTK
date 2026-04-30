@@ -2,11 +2,29 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
-public readonly struct LDTKTileLayer : ILayer {
-    public LDTKLayer Metadata { get; init; }
+/// <summary>
+/// Layer instance data for a tile layer in a level.
+/// </summary>
+public readonly struct LDTKTileLayer {
+    /// <summary>
+    /// Generic layer information.
+    /// </summary>
+    public readonly LDTKLayer Metadata;
 
+    /// <summary>
+    /// The layer's grid dimensions.
+    /// </summary>
     public readonly Point2 GridSize;
+
+    /// <summary>
+    /// The tileset the layer uses.
+    /// </summary>
     public readonly LDTKTileset Tileset;
+
+    /// <summary>
+    /// The information of every tile on the layer.
+    /// Multiple tiles are able to occupy the same grid position in some cases.
+    /// </summary>
     public readonly LDTKTile[] TileElements;
 
     internal LDTKTileLayer(LDTKWorld world, JsonElementLayerInstance instance, JsonElementLayerDefinition definition, JsonElementTileInstance[] tiles) {

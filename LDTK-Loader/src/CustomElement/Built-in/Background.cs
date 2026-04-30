@@ -1,11 +1,37 @@
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// Custom loader behavior for adding a background to a level based on it's background data.
+/// </summary>
+/// <param name="state">The method the loader should use for decided the look of the background.</param>
 public class LDTKBackgroundLoaderElement(LDTKBackgroundLoaderElement.State state = LDTKBackgroundLoaderElement.State.BOTH) : LDTKCustomLoaderElement {
+    /// <summary>
+    /// The method the loader should use for decided the look of the background.
+    /// </summary>
     public enum State {
+        /// <summary>
+        /// Don't load any background.
+        /// </summary>
         NONE,
+
+        /// <summary>
+        /// Load both color and texture if possible.
+        /// </summary>
         BOTH,
+
+        /// <summary>
+        /// Load the background texture, or the solid color if no texture is set.
+        /// </summary>
         TEXTURE_FIRST,
+
+        /// <summary>
+        /// Load the background texture, or no background if no texture is set.
+        /// </summary>
         TEXTURE_ONLY,
+
+        /// <summary>
+        /// Ignore texture information and always set the background to the solid color.
+        /// </summary>
         COLOR_ONLY
     }
 

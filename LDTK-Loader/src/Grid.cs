@@ -3,6 +3,9 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// A grid for containing tile information for a tile layer in a loaded level.
+/// </summary>
 public class LDTKTileGridComponent : Component, IStackableGrid<LDTKTile, List<LDTKTile>>, ISpatialGrid {
     readonly Grid<List<LDTKTile>> Grid;
     Point2 tileSize;

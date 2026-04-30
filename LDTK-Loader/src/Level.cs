@@ -3,27 +3,101 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// A loaded level instance.
+/// </summary>
 public readonly struct LDTKLevel {
+    /// <summary>
+    /// Locations a neighbor can be relative to the level.
+    /// </summary>
     public enum NeighborLocation {
+        /// <summary>
+        /// The neighbor is vertically above the current level.
+        /// </summary>
         UP,
+
+        /// <summary>
+        /// The neighbor is vertically below the current level.
+        /// </summary>
         DOWN,
+
+        /// <summary>
+        /// The neighbor is to the left of the current level.
+        /// </summary>
         LEFT,
+
+        /// <summary>
+        /// The neighbor is to the right of the current level.
+        /// </summary>
         RIGHT,
+
+        /// <summary>
+        /// The neighbor is vertically above and to the left of the current level.
+        /// </summary>
         UP_LEFT,
+
+        /// <summary>
+        /// The neighbor is vertically above and to the right of the current level.
+        /// </summary>
         UP_RIGHT,
+
+        /// <summary>
+        /// The neighbor is vertically below and to the left of the current level.
+        /// </summary>
         DOWN_LEFT,
+
+        /// <summary>
+        /// The neighbor is vertically below and to the right of the current level.
+        /// </summary>
         DOWN_RIGHT,
         BELOW,
+
+        /// <summary>
+        /// The neighbor is higher in depth than the current level.
+        /// </summary>
         ABOVE,
+
+        /// <summary>
+        /// The neighbor is at the same depth as the current level.
+        /// </summary>
         SAME_LOCATION
     }
+
+    /// <summary>
+    /// A neighbor of the current level.
+    /// </summary>
+    /// <param name="InstanceID">The neighbor's level GUID.</param>
+    /// <param name="Location">The level's relative position to the current level.</param>
     public record struct Neighbor(string InstanceID, NeighborLocation Location);
 
+    /// <summary>
+    /// The loaded actor tree for the level. Add this as a child in the game's actor tree to add the level to the game.
+    /// </summary>
     public readonly Actor ActorTree = Actor.Invalid;
+
+    /// <summary>
+    /// The level's dimensions.
+    /// </summary>
     public readonly Point2 Size;
+
+    /// <summary>
+    /// The level's neighbors.
+    /// </summary>
     public readonly Neighbor[] Neighbors;
+
+    /// <summary>
+    /// The level's variable field values.
+    /// </summary>
     public readonly FieldContainer Fields = new();
+
+    /// <summary>
+    /// Information on the level's background.
+    /// </summary>
     public readonly LDTKBackground Background = new();
+
+    /// <summary>
+    /// If the level was loaded correctly.
+    /// </summary>
     public readonly bool IsValid = false;
 
     internal LDTKLevel(Game game, LDTKWorld world, JsonElementLevel level) {

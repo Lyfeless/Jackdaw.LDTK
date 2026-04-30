@@ -3,10 +3,16 @@ using Foster.Framework;
 
 namespace Jackdaw.Loader.LDTK;
 
+/// <summary>
+/// Asset loader stage for importing LDTK project files.
+/// </summary>
 public class LDTKLoader : AssetLoaderStage {
     const string WORLD_EXTENSION = ".ldtk";
     const string BACKUP_FOLDER = "backups";
 
+    /// <summary>
+    /// Configuration data for loading worlds and levels.
+    /// </summary>
     public readonly LDTKConfig Config;
 
     readonly Dictionary<string, string[]> ProjectWorldCache = [];
@@ -76,8 +82,13 @@ public class LDTKLoader : AssetLoaderStage {
         WorldLayout = project.WorldLayout ?? JsonEnumWorldLayout.Free,
     };
 
-    const string BACKLINK = "../";
+    /// <summary>
+    /// Remove backlinks from a file path to start at the highest root folder.
+    /// </summary>
+    /// <param name="path">The path to modify.</param>
+    /// <returns>The path with all leading backlinks removed.</returns>
     public static string RemoveBacklinks(string path) {
+        const string BACKLINK = "../";
         while (path.StartsWith(BACKLINK)) { path = path[BACKLINK.Length..]; }
         return path;
     }

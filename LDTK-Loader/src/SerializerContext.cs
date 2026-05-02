@@ -7,6 +7,6 @@ namespace Jackdaw.Loader.LDTK;
     ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
     PropertyNameCaseInsensitive = true
 )]
-[JsonSerializable(typeof(WorldSaveData))]
-[JsonSerializable(typeof(LevelSaveData))]
+[JsonSerializable(typeof(JsonElementProjectRoot))]
+[JsonSerializable(typeof(JsonElementLevel))]
 internal partial class LDTKSourceGenerationContext : JsonSerializerContext { }

@@ -3,14 +3,38 @@ An extension for loading levels made in the [LDTK](ldtk.io) editor as nodes for 
 This extension is still work-in-progress and may be missing integration with some LDTK features.
 
 ### Usage
-The extension loads levels using the `LDTKLoader` class, which expects an a .ldtk file in the project. In order to work correctly, the setting `Save levels as seperate files` needs to be enabled in the ldtk project's `EXTRA FILES` options.
+The extension loads LDTK projects using a custom asset loader stage. In order to work an `LDTKLoader` instance needs to be added to `CustomAssetLoaders` in the game's content config. Levels can be loaded using the `Load` method insided a loaded `LDTKWorld`.
 
-The extension uses conversion functions to load entities into corresponding actor instances. To set up an actor for use with level loading references need to be defined with the `RegisterActor` function.
+Additional loader logic can be registered in the `LDTKConfig`, either to define entity creation or create custom loading behavior.
+Some common loader logic is pre-defined:
+    - `LDTKBackgroundLoaderElement`: Automatically import a level's defined background information as display components.
+    - `LDTKAnimationLoaderElement`: Use a tile's custom data in a tileset to load an animation instead of the default texture.
+        Custom data syntax: `[ENTRY NAME]: [Name]` ex `anim: Tile/GroundIdle`
+    - `LDTKCollisionLoaderElement`: Load custom per-tile collision from a tile's custom data in a tileset. Has options for stting collision tags using a custom data entry or a tileset's enum flags. Supports multiple collision shapes:
+      - FULL: A rectangle collider the exact size of the tile. Syntax: `[ENTRY NAME]: FULL`
+      - RECT: A rectangle collider of any size. Syntax: `[ENTRY NAME]: RECT [x] [y] [width] [height]` ex: `collider: RECT 4 4 8 8`
+      - CIRCLE: A circular collider centered on its x/y position. Syntax: `[ENTRY NAME]: CIRCLE [x] [y] [radius]` ex `collider: CIRCLE 8 8 4`
+      - POLY: A convex polygon collider made of an abritrary bumber of points. Syntax: `[ENTRY NAME]: POLY [x1] [y1] [x2] [y2] ...` ex `collider: POLY 0 8 16 8 8 16 0 8`
+```cs
+// Create the game instance with a basic configuration
+Game game = new(new GameConfig() {
+    // ... Other game configuration
+    Content = new() {
+        CustomAssetLoaders = [
+            new LDTKLoader(new LDTKConfig("Levels")
+                .RegisterEntity("Example", (actor, entity) => {
+                    // ... Entity creation logic
+                })
+                // Load background and tile-based animations
+                .RegisterCustomLoaderElement(new LDTKBackgroundLoaderElement())
+                .RegisterCustomLoaderElement(new LDTKAnimationLoaderElement("anim"))
+            )
+        ]
+    }
+});
 
-Tile grids are loaded without needing registration but can make use of additional loading features to automatically set up some systems. Custom data can be loaded using the tileset's `custom data` field, which the loader expects in lines of key-value pairs with a colon seperator (ex; `custom: my custom data goes here`). The loader has some built-in custom data fields that can be used to set up some common systems.
-- Using the `collider` data key, a tile can be given collsion information on load. Syntax: `collider: [TYPE] [DATA]`
-    - FULL: A rectangle collider the exact size of the tile. Syntax: `collider: FULL`
-    - RECT: A rectangle collider of any size. Syntax: `collider: RECT [x] [y] [width] [height]` ex: `collider: RECT 4 4 8 8`
-    - CIRCLE: A circular collider centered on its x/y position. Syntax: `collider: CIRCLE [x] [y] [radius]` ex `collider: CIRCLE 8 8 4`
-    - POLY: A convex polygon collider made of an abritrary bumber of points. Syntax: `collider: OLY [x1] [y1] [x2] [y2] ...` ex `collider: POLY 0 8 16 8 8 16 0 8`
-- Using the `anim` data key, a tile can run a sprite animation instead of showing its normal texture. Syntax `anim: [NAME]` ex `anim: testAnim`
+// Load Level
+LDTKWorld world = game.Assets.GetLDTKWorld("Levels");
+LDTKLevel level = world.Load(name);
+game.Root = level.ActorTree;
+```

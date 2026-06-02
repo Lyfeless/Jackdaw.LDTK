@@ -138,7 +138,7 @@ public class LDTKCollisionLoaderElement(LDTKCollisionConfig config) : LDTKCustom
         }
 
         return entries[0].ToLower() switch {
-            "full" => ParseRect([0, 0, tileSize, tileSize], tags),
+            "full" => new TileColliderRect([0, 0, tileSize, tileSize], tags),
             "rect" => ParseRect(elements, tags),
             "circle" => ParseCircle(elements, tags),
             "poly" => ParsePoly(elements, tags),
@@ -184,7 +184,7 @@ internal readonly struct TileColliderRect(float[] data, TagContainer tags) : ITi
     readonly Rect rect = new(data[0], data[1], data[2], data[3]);
 
     public readonly Collider Get(int tileSize, TwoAxisFlip flip) {
-        if (flip.Neither) { return new RectangleCollider(rect); }
+        if (flip.Neither) { return new RectangleCollider(rect) { Tags = tags }; }
         float x = flip.FlipX ? tileSize - rect.X - rect.Size.X : rect.X;
         float y = flip.FlipY ? tileSize - rect.Y - rect.Size.Y : rect.Y;
         return new RectangleCollider(new Rect(x, y, rect.Width, rect.Height)) { Tags = tags };

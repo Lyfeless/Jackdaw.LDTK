@@ -62,6 +62,13 @@ public abstract class LDTKCustomLoaderElement {
     public virtual void OnTilesetLoad(LDTKTileset tileset) { }
 
     /// <summary>
+    /// Process a tileset when it's unloaded from memory. <br/>
+    /// Only called if <see cref="CanProcessTilesets"> is true when registered.
+    /// </summary>
+    /// <param name="tileset">The tileset being loaded.</param>
+    public virtual void OnTilesetUnload(LDTKTileset tileset) { }
+
+    /// <summary>
     /// Process or modify an entity while it's being created by the main loader <br/>
     /// Only called if <see cref="CanModifyEntity"> is true when registered.
     /// </summary>

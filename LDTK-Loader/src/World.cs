@@ -58,6 +58,7 @@ public class LDTKWorld {
     /// </summary>
     public readonly Point2 Size;
 
+    public readonly string[] LevelNames;
     readonly Dictionary<string, ILevelAccessor> Levels = [];
 
     readonly LDTKWorldDefinitions Definitions;
@@ -90,6 +91,8 @@ public class LDTKWorld {
         foreach (JsonElementLevel level in data.Levels) {
             Levels.Add(level.Name, CreateAccessor(assets, level, external));
         }
+
+        LevelNames = [.. Levels.Keys];
     }
 
     ILevelAccessor CreateAccessor(Assets assets, JsonElementLevel level, bool external)
@@ -112,6 +115,10 @@ public class LDTKWorld {
     /// <param name="name">The level's name.</param>
     /// <returns>The level instance, or an empty level if a matching level isn't found.</returns>
     public async Task<LDTKLevel> LoadAsync(string name) => Load(name);
+
+    internal void Unload() {
+        Tilesets.Unload();
+    }
 
     internal static LDTKWorldLayout MapLayout(JsonEnumWorldLayout layout) => layout switch {
         JsonEnumWorldLayout.GridVania => LDTKWorldLayout.GRIDVANIA,

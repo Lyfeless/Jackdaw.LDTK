@@ -48,6 +48,7 @@ internal class CustomLoaderElementContainer {
     }
 
     public void OnTilesetLoad(LDTKTileset tileset) { foreach (LDTKCustomLoaderElement element in TilesetProcessElements) { element.OnTilesetLoad(tileset); } }
+    public void OnTilesetUnload(LDTKTileset tileset) { foreach (LDTKCustomLoaderElement element in TilesetProcessElements) { element.OnTilesetUnload(tileset); } }
 
     public Actor OnEntityLoad(Actor actor, LDTKEntity entity) {
         foreach (LDTKCustomLoaderElement element in EntityModifyElements) { actor = element.OnEntityLoad(actor, entity); }

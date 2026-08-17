@@ -9,11 +9,20 @@ public readonly struct LDTKTilesetContainer {
     /// </summary>
     public readonly Dictionary<string, LDTKTileset> Entries = [];
 
+    readonly LDTKConfig config;
+
     internal LDTKTilesetContainer(Assets assets, LDTKConfig config, JsonElementTilesetDefinition[] tilesets) {
+        this.config = config;
         foreach (JsonElementTilesetDefinition data in tilesets) {
             LDTKTileset tileset = new(assets, data);
             if (config.CustomElements.CanProcessTilesets) { config.CustomElements.OnTilesetLoad(tileset); }
             Entries.Add(tileset.Name, tileset);
+        }
+    }
+
+    internal void Unload() {
+        foreach ((_, LDTKTileset tileset) in Entries) {
+            if (config.CustomElements.CanProcessTilesets) { config.CustomElements.OnTilesetUnload(tileset); }
         }
     }
 

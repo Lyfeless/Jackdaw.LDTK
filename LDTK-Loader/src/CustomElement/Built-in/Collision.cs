@@ -89,6 +89,13 @@ public class LDTKCollisionLoaderElement(LDTKCollisionConfig config) : LDTKCustom
         }
     }
 
+    public override void OnTilesetUnload(LDTKTileset tileset) {
+        var keysToRemove = colliders.Where(e => e.Key.Item1 == tileset.ID).ToList();
+        foreach (var element in keysToRemove) {
+            colliders.Remove(element.Key);
+        }
+    }
+
     public override Actor OnTileLayerLoad(Actor actor, LDTKTileLayer layer) {
         int tilesetID = layer.Tileset.ID;
         int tileSize = layer.Tileset.TileSize;

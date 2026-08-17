@@ -28,14 +28,16 @@ public class LDTKLoader : AssetLoaderStage {
     public override void RunLoad(Assets assets, AssetCollection collection) {
         foreach (AssetProviderItem item in Filter(collection)) {
             JsonElementProjectRoot project = GetProject(assets, item);
-            CacheWorlds(project.InstanceID, LoadWorlds(assets, item.Name, project));
+            CacheWorlds(item.ToString(), LoadWorlds(assets, item.Name, project));
         }
     }
 
     public override void RunUnload(Assets assets, AssetCollection collection) {
         foreach (AssetProviderItem item in Filter(collection)) {
-            if (!ProjectWorldCache.TryGetValue(item.Name, out string[]? worlds)) { return; }
+            if (!ProjectWorldCache.TryGetValue(item.ToString(), out string[]? worlds)) { return; }
             foreach (string world in worlds) {
+                LDTKWorld instance = assets.GetLDTKWorld(world);
+                instance.Unload();
                 RemoveAsset<LDTKWorld>(assets, world);
             }
         }

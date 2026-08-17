@@ -26,6 +26,13 @@ public class LDTKAnimationLoaderElement(string entryName) : LDTKCustomLoaderElem
         }
     }
 
+    public override void OnTilesetUnload(LDTKTileset tileset) {
+        var keysToRemove = animatedTiles.Where(e => e.Key.Item1 == tileset.ID).ToList();
+        foreach (var element in keysToRemove) {
+            animatedTiles.Remove(element.Key);
+        }
+    }
+
     public override Sprite OnTileSpriteLoad(Sprite sprite, Game game, LDTKTile tile, LDTKTileLayer layer) {
         if (!animatedTiles.TryGetValue((layer.Tileset.ID, tile.TilesetTile.ID), out string? animation)) { return sprite; }
         return new SpriteAnimated(game, animation);

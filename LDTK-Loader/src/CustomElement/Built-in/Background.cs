@@ -61,7 +61,7 @@ public class LDTKBackgroundLoaderElement(LDTKBackgroundLoaderElement.State state
     }
 
     static Actor Texture(Game game, LDTKLevel level) {
-        Actor actor = Actor.From(new DisplayObjectRenderComponent(game, new SpriteSingle(level.Background.Texture) {
+        Actor actor = Actor.From(new RenderComponent(game, new SpriteSingle(level.Background.Texture) {
             Offset = level.Background.Position
         }));
         actor.Scale = level.Background.Scale;
@@ -69,7 +69,7 @@ public class LDTKBackgroundLoaderElement(LDTKBackgroundLoaderElement.State state
         return actor;
     }
 
-    static Actor Color(Game game, LDTKLevel level) => Actor.From(new DisplayObjectRenderComponent(game, new DisplayRectangle(level.Size.X, level.Size.Y) {
+    static Actor Color(Game game, LDTKLevel level) => Actor.From(new RenderComponent(game, new DisplayRectangle(level.Size.X, level.Size.Y) {
         Color = level.Background.Color
     }));
 

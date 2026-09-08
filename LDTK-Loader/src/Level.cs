@@ -176,8 +176,7 @@ public readonly struct LDTKLevel {
         LDTKTileGridComponent tileGrid = new(game, data.GridSize, data.Tileset.TileSize);
         foreach (LDTKTile tile in data.TileElements) {
             Sprite sprite = new SpriteSingle(tile.TilesetTile.Texture) {
-                FlipX = tile.Flip.FlipX,
-                FlipY = tile.Flip.FlipY
+                Flip = new(tile.Flip.FlipX, tile.Flip.FlipY)
             };
 
             if (world.Config.CustomElements.CanModifyTileSprite) {
